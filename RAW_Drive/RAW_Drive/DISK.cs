@@ -53,7 +53,7 @@ public class Disk : Stream
 
         handle = NativeMethods.CreateFile(
             string.Format("\\\\.\\PhysicalDrive{0}", driveNumber),
-            NativeMethods.GenericRead,
+            NativeMethods.GenericRead | NativeMethods.GenericWrite,
             NativeMethods.FileShareRead | NativeMethods.Filesharewrite,
             IntPtr.Zero,
             NativeMethods.OpenExisting,
@@ -79,7 +79,7 @@ public class Disk : Stream
 
         handle = NativeMethods.CreateFile(
             drive.Name,
-            NativeMethods.GenericRead,
+            NativeMethods.GenericRead | NativeMethods.GenericWrite,
             NativeMethods.FileShareRead | NativeMethods.Filesharewrite,
             IntPtr.Zero,
             NativeMethods.OpenExisting,
@@ -153,7 +153,10 @@ public class Disk : Stream
         innerStream.Write(buffer, offset, count);
     }
 
-
+    public void Write(byte[] buffer)
+    {
+        innerStream.Write(buffer, 0, buffer.Length);
+    }
 }
 
 internal static class NativeMethods

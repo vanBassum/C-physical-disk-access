@@ -87,6 +87,28 @@ namespace RAW_Drive
             WIN32_DiskDrive selectedDrive = comboBox1.SelectedItem as WIN32_DiskDrive;
             disk.Open(selectedDrive);
 
+            byte[] data = new byte[1024];
+
+            /*
+            data = Enumerable.Repeat<byte>(128, 1024).ToArray();
+
+            for (int i=0; i<1024; i++)
+            {
+                disk.Write(data);
+            }
+            */
+
+
+
+            for (int i = 0; i < 1024; i++)
+            {
+                disk.Read(data);
+            }
+
+
+
+
+            /*
             disk.Read(446);
 
             Partition p1 = new Partition();
@@ -106,7 +128,7 @@ namespace RAW_Drive
 
             buf = new byte[512];
             disk.Read(buf);
-
+            */
             //disk.Flush();
             disk.Close();
         }
