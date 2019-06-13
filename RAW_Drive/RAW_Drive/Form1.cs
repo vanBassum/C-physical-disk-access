@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.ComponentModel.Design;
+using System.Management;
 
 namespace RAW_Drive
 {
@@ -27,6 +28,14 @@ namespace RAW_Drive
 
         private void Form1_Load(object sender, EventArgs e)
         {
+
+            Button1_Click(null, null);
+
+
+
+
+
+            /*
             disk.OpenDrive(2);
 
             disk.Read(446);
@@ -51,6 +60,7 @@ namespace RAW_Drive
 
             //disk.Flush();
             disk.Close();
+            */
         }
 
         private void ComboBox1_SelectedIndexChanged(object sender, EventArgs e)
@@ -61,6 +71,15 @@ namespace RAW_Drive
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             
+        }
+
+        private void Button1_Click(object sender, EventArgs e)
+        {
+            comboBox1.Items.Clear();
+            comboBox1.Items.AddRange(WIN32_DiskDrive.GetDrives());
+
+            if (comboBox1.Items.Count > 0)
+                comboBox1.SelectedIndex = 0;
         }
     }
 
