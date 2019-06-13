@@ -67,7 +67,33 @@ public class Disk : Stream
 
         innerStream = new FileStream(handle, FileAccess.ReadWrite);
     }
-    
+
+    public void Open(WIN32_DiskDrive drive)
+    {
+        const int VolumeNameSize = 255;
+        const int FileSystemNameBufferSize = 255;
+        StringBuilder volumeNameBuffer = new StringBuilder(VolumeNameSize);
+        StringBuilder fileSystemNameBuffer = new StringBuilder(FileSystemNameBufferSize);
+
+
+
+        handle = NativeMethods.CreateFile(
+            drive.Name,
+            NativeMethods.GenericRead,
+            NativeMethods.FileShareRead | NativeMethods.Filesharewrite,
+            IntPtr.Zero,
+            NativeMethods.OpenExisting,
+            0,
+            IntPtr.Zero);
+
+        int err = Marshal.GetLastWin32Error();
+
+        if (err != 0)
+            throw new Exception("Error: " + err);
+
+        innerStream = new FileStream(handle, FileAccess.ReadWrite);
+    }
+
     public override void Close()
     {
         NativeMethods.CloseHandle(handle);

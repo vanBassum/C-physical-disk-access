@@ -81,6 +81,35 @@ namespace RAW_Drive
             if (comboBox1.Items.Count > 0)
                 comboBox1.SelectedIndex = 0;
         }
+
+        private void Button2_Click(object sender, EventArgs e)
+        {
+            WIN32_DiskDrive selectedDrive = comboBox1.SelectedItem as WIN32_DiskDrive;
+            disk.Open(selectedDrive);
+
+            disk.Read(446);
+
+            Partition p1 = new Partition();
+
+            byte[] buf = new byte[4];
+
+            p1.BootFlag = (byte)disk.ReadByte();
+            disk.Read(buf, 0, 3);
+            p1.CHS_Begin = BitConverter.ToUInt32(buf, 0);
+            p1.TypeCode = (byte)disk.ReadByte();
+            disk.Read(buf, 0, 3);
+            p1.CHS_End = BitConverter.ToUInt32(buf, 0);
+            p1.LBA_Begin = BitConverter.ToUInt32(disk.Read(4), 0);
+            p1.NumberOfSectors = BitConverter.ToUInt32(disk.Read(4), 0);
+
+            disk.Seek(p1.LBA_Begin, SeekOrigin.Begin);
+
+            buf = new byte[512];
+            disk.Read(buf);
+
+            //disk.Flush();
+            disk.Close();
+        }
     }
 
     public class Partition
