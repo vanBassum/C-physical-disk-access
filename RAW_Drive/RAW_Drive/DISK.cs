@@ -89,6 +89,11 @@ public class Disk : Stream
         innerStream.Flush();
     }
 
+    /*
+     * 
+     * Once the logical or physical drive has been opened, you can then perform direct I/O to the data on the entire drive. When performing direct disk I/O, you must seek, read, and write in multiples of sector sizes of the device and on sector boundaries. Call DeviceIoControl() using IOCTL_DISK_GET_DRIVE_GEOMETRY to get the bytes per sector, number of sectors, sectors per track, and so forth, so that you can compute the size of the buffer that you will need.
+     * 
+     */
     public override int Read(byte[] buffer, int offset, int count)
     {
         return innerStream.Read(buffer, offset, count);
@@ -140,6 +145,8 @@ internal static class NativeMethods
     [DllImport("kernel32.dll", SetLastError = true)]
     public static extern bool CloseHandle(IntPtr handle);
 
+
+    //https://docs.microsoft.com/en-us/windows/desktop/api/fileapi/nf-fileapi-createfilea
     [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
     public static extern IntPtr CreateFile(
         string lpFileName,
@@ -162,3 +169,4 @@ internal static class NativeMethods
         int nFileSystemNameSize);
 
 }
+ 
