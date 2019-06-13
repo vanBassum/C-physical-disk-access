@@ -9,11 +9,16 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.ComponentModel.Design;
 
 namespace RAW_Drive
 {
+
+
+
     public partial class Form1 : Form
     {
+        Disk disk = new Disk();
 
         public Form1()
         {
@@ -22,11 +27,18 @@ namespace RAW_Drive
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            Disk disk = new Disk();
-            disk.Open("F");
-            byte[] data = new byte[1024];
-            disk.Write(data, 0, data.Length);
-            disk.Flush();
+            disk.OpenDrive(2);
+
+            disk.Position += 446;
+
+            byte[] p1 = disk.Read(16);
+            byte[] p2 = disk.Read(16);
+            byte[] p3 = disk.Read(16);
+            byte[] p4 = disk.Read(16);
+
+
+
+            //disk.Flush();
             disk.Close();
         }
 
@@ -34,7 +46,10 @@ namespace RAW_Drive
         {
 
         }
-    }
 
-    
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            
+        }
+    }
 }

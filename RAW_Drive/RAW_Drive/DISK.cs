@@ -10,14 +10,14 @@ using System.Text;
 
 public class Disk : Stream
 {
-    Stream inner;
+    Stream innerStream;
     IntPtr handle;
 
     public Disk()
     {
         
     }
-    public bool Open(string driveLetter)
+    public void OpenVolume(string driveLetter)
     {
         const int VolumeNameSize = 255;
         const int FileSystemNameBufferSize = 255;
@@ -33,20 +33,26 @@ public class Disk : Stream
             0,
             IntPtr.Zero);
 
-        inner = new FileStream(handle, FileAccess.ReadWrite);
-        return handle != (IntPtr)(-1);
+        int err = Marshal.GetLastWin32Error();
+
+        if (err != 0)
+            throw new Exception("Error: " + err);
+
+        innerStream = new FileStream(handle, FileAccess.ReadWrite);
     }
 
-    /*
-    public bool Open(int driveNumber)
+    
+    public void OpenDrive(int driveNumber)
     {
         const int VolumeNameSize = 255;
         const int FileSystemNameBufferSize = 255;
         StringBuilder volumeNameBuffer = new StringBuilder(VolumeNameSize);
         StringBuilder fileSystemNameBuffer = new StringBuilder(FileSystemNameBufferSize);
 
+
+
         handle = NativeMethods.CreateFile(
-            string.Format("\\\\.\\PHYSICALDRIVE{0}", driveNumber),
+            string.Format("\\\\.\\PhysicalDrive{0}", driveNumber),
             NativeMethods.GenericRead,
             NativeMethods.FileShareRead | NativeMethods.Filesharewrite,
             IntPtr.Zero,
@@ -54,56 +60,63 @@ public class Disk : Stream
             0,
             IntPtr.Zero);
 
-        inner = new FileStream(handle, FileAccess.ReadWrite);
-        return handle != (IntPtr)(-1);
+        int err = Marshal.GetLastWin32Error();
+
+        if (err != 0)
+            throw new Exception("Error: " + err);
+
+        innerStream = new FileStream(handle, FileAccess.ReadWrite);
     }
-    */
+    
     public override void Close()
     {
         NativeMethods.CloseHandle(handle);
     }
 
 
-    public override bool CanRead => inner.CanRead;
+    public override bool CanRead => innerStream.CanRead;
 
-    public override bool CanSeek => inner.CanSeek;
+    public override bool CanSeek => innerStream.CanSeek;
 
-    public override bool CanWrite => inner.CanWrite;
+    public override bool CanWrite => innerStream.CanWrite;
 
-    public override long Length => inner.Length;
+    public override long Length => innerStream.Length;
 
-    public override long Position { get => inner.Position; set => inner.Position = value; }
+    public override long Position { get => innerStream.Position; set => innerStream.Position = value; }
 
     public override void Flush()
     {
-        inner.Flush();
+        innerStream.Flush();
     }
 
     public override int Read(byte[] buffer, int offset, int count)
     {
-        return inner.Read(buffer, offset, count);
+        return innerStream.Read(buffer, offset, count);
     }
 
     public override long Seek(long offset, SeekOrigin origin)
     {
-        return inner.Seek(offset, origin);
+        return innerStream.Seek(offset, origin);
     }
 
     public override void SetLength(long value)
     {
-        inner.SetLength(value);
+        innerStream.SetLength(value);
     }
 
     public override void Write(byte[] buffer, int offset, int count)
     {
-        inner.Write(buffer, offset, count);
+        innerStream.Write(buffer, offset, count);
     }
+
+
 }
 
 internal static class NativeMethods
 {
     public const uint GenericRead = ((uint)1 << 31);
-    public const uint GenericWrite = ((uint)1 << 01);
+    public const uint GenericWrite = ((uint)1 << 30);
+    public const uint GenericAll = ((uint)1 << 28);
     public const uint FileShareRead = 1;
     public const uint Filesharewrite = 2;
     public const uint OpenExisting = 3;
