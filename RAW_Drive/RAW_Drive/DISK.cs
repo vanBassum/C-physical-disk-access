@@ -94,6 +94,19 @@ public class Disk : Stream
         return innerStream.Read(buffer, offset, count);
     }
 
+    public int Read(byte[] buffer)
+    {
+        return Read(buffer, 0, buffer.Length);
+    }
+
+    public byte[] Read(int length)
+    {
+        byte[] data = new byte[length];
+        Read(data, 0, data.Length);
+        return data;
+    }
+
+
     public override long Seek(long offset, SeekOrigin origin)
     {
         return innerStream.Seek(offset, origin);

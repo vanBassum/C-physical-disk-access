@@ -29,14 +29,25 @@ namespace RAW_Drive
         {
             disk.OpenDrive(2);
 
-            disk.Position += 446;
+            disk.Read(446);
 
-            byte[] p1 = disk.Read(16);
-            byte[] p2 = disk.Read(16);
-            byte[] p3 = disk.Read(16);
-            byte[] p4 = disk.Read(16);
+            Partition p1 = new Partition();
 
+            byte[] buf = new byte[4];
 
+            p1.BootFlag = (byte)disk.ReadByte();
+            disk.Read(buf, 0, 3);
+            p1.CHS_Begin = BitConverter.ToUInt32(buf, 0);
+            p1.TypeCode = (byte)disk.ReadByte();
+            disk.Read(buf, 0, 3);
+            p1.CHS_End = BitConverter.ToUInt32(buf, 0);
+            p1.LBA_Begin = BitConverter.ToUInt32(disk.Read(4), 0);
+            p1.NumberOfSectors = BitConverter.ToUInt32(disk.Read(4), 0);
+
+            disk.Seek(p1.LBA_Begin, SeekOrigin.Begin);
+
+            buf = new byte[512];
+            disk.Read(buf);
 
             //disk.Flush();
             disk.Close();
@@ -51,5 +62,15 @@ namespace RAW_Drive
         {
             
         }
+    }
+
+    public class Partition
+    {
+        public byte BootFlag { get; set; }
+        public UInt32 CHS_Begin { get; set; }
+        public UInt32 CHS_End { get; set; }
+        public byte TypeCode { get; set; }
+        public UInt32 LBA_Begin { get; set; }
+        public UInt32 NumberOfSectors { get; set; }
     }
 }
