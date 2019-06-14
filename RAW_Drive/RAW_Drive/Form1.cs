@@ -11,12 +11,11 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.ComponentModel.Design;
 using System.Management;
+using MasterLibrary.LowLevel_IO.Drive;
+using MasterLibrary.LowLevel_IO.PInvoke;
 
 namespace RAW_Drive
 {
-
-
-
     public partial class Form1 : Form
     {
         Disk disk = new Disk();
@@ -31,46 +30,6 @@ namespace RAW_Drive
 
             Button1_Click(null, null);
 
-
-
-
-
-            /*
-            disk.OpenDrive(2);
-
-            disk.Read(446);
-
-            Partition p1 = new Partition();
-
-            byte[] buf = new byte[4];
-
-            p1.BootFlag = (byte)disk.ReadByte();
-            disk.Read(buf, 0, 3);
-            p1.CHS_Begin = BitConverter.ToUInt32(buf, 0);
-            p1.TypeCode = (byte)disk.ReadByte();
-            disk.Read(buf, 0, 3);
-            p1.CHS_End = BitConverter.ToUInt32(buf, 0);
-            p1.LBA_Begin = BitConverter.ToUInt32(disk.Read(4), 0);
-            p1.NumberOfSectors = BitConverter.ToUInt32(disk.Read(4), 0);
-
-            disk.Seek(p1.LBA_Begin, SeekOrigin.Begin);
-
-            buf = new byte[512];
-            disk.Read(buf);
-
-            //disk.Flush();
-            disk.Close();
-            */
-        }
-
-        private void ComboBox1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            
         }
 
         private void Button1_Click(object sender, EventArgs e)
@@ -87,25 +46,13 @@ namespace RAW_Drive
             WIN32_DiskDrive selectedDrive = comboBox1.SelectedItem as WIN32_DiskDrive;
             disk.Open(selectedDrive);
 
-            byte[] data = new byte[1024];
 
-            /*
-            data = Enumerable.Repeat<byte>(128, 1024).ToArray();
+            for(int i=0; i<64; i++)
+                richTextBox1.AppendText( string.Format("{0:x}\t{1}\r\n", (i * 64), ByteArrayToString(disk.Read(64))));
 
-            for (int i=0; i<1024; i++)
-            {
-                disk.Write(data);
-            }
-            */
+            disk.Close();
 
-
-
-            for (int i = 0; i < 1024; i++)
-            {
-                disk.Read(data);
-            }
-
-
+            return;
 
 
             /*
@@ -130,7 +77,14 @@ namespace RAW_Drive
             disk.Read(buf);
             */
             //disk.Flush();
-            disk.Close();
+        }
+
+        public static string ByteArrayToString(byte[] ba)
+        {
+            StringBuilder hex = new StringBuilder(ba.Length * 2);
+            foreach (byte b in ba)
+                hex.AppendFormat("{0:x2} ", b);
+            return hex.ToString();
         }
     }
 
