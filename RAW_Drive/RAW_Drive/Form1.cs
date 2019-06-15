@@ -47,36 +47,26 @@ namespace RAW_Drive
             disk.Open(selectedDrive);
 
 
-            for(int i=0; i<64; i++)
-                richTextBox1.AppendText( string.Format("{0:x}\t{1}\r\n", (i * 64), ByteArrayToString(disk.Read(64))));
-
-            disk.Close();
-
-            return;
-
-
-            /*
             disk.Read(446);
 
-            Partition p1 = new Partition();
+            Partition[] partitions = new Partition[4];
+            partitions[0] = new Partition(disk.Read(16));
+            partitions[1] = new Partition(disk.Read(16));
+            partitions[2] = new Partition(disk.Read(16));
+            partitions[3] = new Partition(disk.Read(16));
 
-            byte[] buf = new byte[4];
 
-            p1.BootFlag = (byte)disk.ReadByte();
-            disk.Read(buf, 0, 3);
-            p1.CHS_Begin = BitConverter.ToUInt32(buf, 0);
-            p1.TypeCode = (byte)disk.ReadByte();
-            disk.Read(buf, 0, 3);
-            p1.CHS_End = BitConverter.ToUInt32(buf, 0);
-            p1.LBA_Begin = BitConverter.ToUInt32(disk.Read(4), 0);
-            p1.NumberOfSectors = BitConverter.ToUInt32(disk.Read(4), 0);
 
-            disk.Seek(p1.LBA_Begin, SeekOrigin.Begin);
 
-            buf = new byte[512];
-            disk.Read(buf);
-            */
-            //disk.Flush();
+            Int64 begin = partitions[0].NumberOfSectors * selectedDrive.BytesPerSector;
+
+            disk.Seek(begin, SeekOrigin.Begin);
+
+            richTextBox1.Text = ByteArrayToString(disk.Read(1024));
+
+
+
+            disk.Close();
         }
 
         public static string ByteArrayToString(byte[] ba)
@@ -96,5 +86,15 @@ namespace RAW_Drive
         public byte TypeCode { get; set; }
         public UInt32 LBA_Begin { get; set; }
         public UInt32 NumberOfSectors { get; set; }
+
+        public Partition(byte[] data)
+        {
+            BootFlag = data[0];
+            CHS_Begin = BitConverter.ToUInt32(data, 0) & 0x00FFFFFF;
+            TypeCode = data[4];
+            CHS_End = BitConverter.ToUInt32(data, 4) & 0x00FFFFFF;
+            LBA_Begin = BitConverter.ToUInt32(data, 8);
+            NumberOfSectors = BitConverter.ToUInt32(data, 12);
+        }
     }
 }

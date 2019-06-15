@@ -34,7 +34,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="MasterLibrary">
-      <HintPath>..\..\..\NET_Library\MasterLibrary\MasterLibrary\bin\Release\MasterLibrary.dll</HintPath>
+      <HintPath>..\..\..\NET_Library\MasterLibrary\MasterLibrary\bin\Debug\MasterLibrary.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
