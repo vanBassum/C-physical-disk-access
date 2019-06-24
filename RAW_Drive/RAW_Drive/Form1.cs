@@ -13,12 +13,15 @@ using System.ComponentModel.Design;
 using System.Management;
 using MasterLibrary.LowLevel_IO.Drive;
 using MasterLibrary.LowLevel_IO.PInvoke;
+using MasterLibrary.LowLevel_IO.Streams;
+using MasterLibrary.Datasave.SaveableClasses;
 
 namespace RAW_Drive
 {
     public partial class Form1 : Form
     {
-        Disk disk = new Disk();
+        Settings settings = new Settings();
+        Int64 pos = 0;
 
         public Form1()
         {
@@ -43,38 +46,114 @@ namespace RAW_Drive
 
         private void Button2_Click(object sender, EventArgs e)
         {
-            WIN32_DiskDrive selectedDrive = comboBox1.SelectedItem as WIN32_DiskDrive;
-            disk.Open(selectedDrive);
-
-
-            disk.Read(446);
-
-            Partition[] partitions = new Partition[4];
-            partitions[0] = new Partition(disk.Read(16));
-            partitions[1] = new Partition(disk.Read(16));
-            partitions[2] = new Partition(disk.Read(16));
-            partitions[3] = new Partition(disk.Read(16));
-
-
-
-
-            Int64 begin = partitions[0].NumberOfSectors * selectedDrive.BytesPerSector;
-
-            disk.Seek(begin, SeekOrigin.Begin);
-
-            richTextBox1.Text = ByteArrayToString(disk.Read(1024));
-
-
-
-            disk.Close();
+            OpenDisk();
+            LoadPWS();
         }
 
-        public static string ByteArrayToString(byte[] ba)
+
+        void OpenDisk()
         {
-            StringBuilder hex = new StringBuilder(ba.Length * 2);
-            foreach (byte b in ba)
-                hex.AppendFormat("{0:x2} ", b);
-            return hex.ToString();
+            Disk disk = new Disk();
+            disk.Open(comboBox1.SelectedItem as WIN32_DiskDrive);
+
+            SectorStream stream = new SectorStream(disk);
+            stream.Seek(446);
+            Partition[] partitions = new Partition[4];
+            partitions[0] = new Partition(stream.Read(16));
+            partitions[1] = new Partition(stream.Read(16));
+            partitions[2] = new Partition(stream.Read(16));
+            partitions[3] = new Partition(stream.Read(16));
+
+            pos = (partitions[0].LBA_Begin + partitions[0].NumberOfSectors) * disk.BytesPerSector;
+
+
+            stream.Close();
+
+        }
+
+
+        private void LoadPWS()
+        {
+            Disk disk = new Disk();
+            disk.Open(comboBox1.SelectedItem as WIN32_DiskDrive);
+
+            SectorStream stream = new SectorStream(disk);
+            stream.Seek(pos);
+            settings.Load(stream);
+            stream.Close();
+
+            listBox1.Items.Clear();
+            listBox1.DataSource = settings.Accounts;
+        }
+
+        private void SavePWS()
+        {
+            Disk disk = new Disk();
+            disk.Open(comboBox1.SelectedItem as WIN32_DiskDrive);
+
+            SectorStream stream = new SectorStream(disk);
+            stream.Seek(pos);
+            settings.Save(stream);
+            stream.Flush();
+            stream.Close();
+        }
+
+        private void Button5_Click(object sender, EventArgs e)
+        {
+            settings.Accounts.Add(new Account());
+        }
+
+        private void ListBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            Account sa = listBox1.SelectedItem as Account;
+            textBox1.Text = sa.Name;
+            textBox2.Text = sa.Site;
+            textBox3.Text = sa.Email;
+            textBox4.Text = sa.Username;
+            textBox5.Text = sa.Password;
+            richTextBox1.Text = sa.Detail;
+        }
+
+
+
+        private void Button6_Click(object sender, EventArgs e)
+        {
+            Account sa = listBox1.SelectedItem as Account;
+            sa.Name = textBox1.Text;
+            sa.Site = textBox2.Text;
+            sa.Email = textBox3.Text;
+            sa.Username = textBox4.Text;
+            sa.Password = textBox5.Text;
+            sa.Detail = richTextBox1.Text;
+
+            SavePWS();
+        }
+
+        private void Button3_Click(object sender, EventArgs e)
+        {
+            OpenDisk();
+            SavePWS();
+        }
+    }
+
+    public class Settings : SaveableSettings
+    {
+        public BindingList<Account> Accounts { get; set; } = new BindingList<Account>();
+
+    }
+
+
+    public class Account
+    {
+        public string Name { get; set; } = "New Item";
+        public string Site { get; set; } = "New Item";
+        public string Email { get; set; } = "New Item";
+        public string Username { get; set; } = "New Item";
+        public string Password { get; set; } = "New Item";
+        public string Detail { get; set; } = "";
+        public override string ToString()
+        {
+            return Name;
         }
     }
 

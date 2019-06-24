@@ -1,0 +1,3 @@
+[submodule "MasterLibrary"]
+	path = MasterLibrary
+	url = https://github.com/vanBassum/NET_Library.git
